@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neel Fashion Store - Street-meets-Ethnic Styles</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="navbar__inner">
+            <div class="nav-logo">Neel Fashion</div>
+            <ul class="nav-menu">
+                <li><a href="#home" class="nav-link">Home</a></li>
+                <li><a href="#products" class="nav-link">Products</a></li>
+                <li><a href="#about" class="nav-link">About</a></li>
+                <li><a href="#contact" class="nav-link">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Home Section -->
+    <section id="home" class="hero">
+        <div class="hero__content">
+            <div class="hero-text">
+                <h1 class="hero-title">Street-meets-Ethnic Styles Delivered to Your Doorstep</h1>
+                <p class="hero-tagline">Discover the perfect blend of contemporary fashion and traditional elegance</p>
+                <button class="cta-btn" onclick="scrollToProducts()">Shop Now</button>
+            </div>
+            <div class="hero-image">
+                <img src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1200&q=80" alt="Fashion Store" />
+            </div>
+        </div>
+    </section>
+
+    <!-- Products Section -->
+    <section id="products" class="products-section">
+        <div class="container">
+            <h2 class="section-title">Our Products</h2>
+            
+            <!-- Filters -->
+            <div class="filters">
+                <div class="category-filters">
+                    <button class="filter-btn active" data-category="All">All</button>
+                    <button class="filter-btn" data-category="man-jeans">Man Jeans</button>
+                    <button class="filter-btn" data-category="man-shirt">Man Shirt</button>
+                    <button class="filter-btn" data-category="man-tshirt">Man Tshirt</button>
+                </div>
+                <div class="search-container">
+                    <input type="text" id="searchInput" placeholder="Search products..." class="search-input">
+                </div>
+            </div>
+
+            <!-- Products Grid -->
+            <div class="products-grid" id="productsGrid">
+                <!-- Products will be rendered here by JavaScript -->
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="about-section">
+        <div class="container">
+            <h2 class="section-title">About Neel Fashion</h2>
+            <div class="about-content">
+                <p>Welcome to Neel Fashion Store, your premier destination for contemporary and ethnic fashion in Lunawada, Gujarat. We pride ourselves on offering the perfect blend of street-style and traditional wear that speaks to the modern Indian fashion enthusiast.</p>
+                
+                <div class="store-info">
+                    <h3>Store Details</h3>
+                    <p><strong>Address:</strong> Soniwad, Parabazar, Lunawada, Mahisagar, Gujarat</p>
+                    <p><strong>Operating Hours:</strong> 10 AM – 9 PM (Daily)</p>
+                </div>
+
+                <div class="usp-points">
+                    <h3>Why Choose Us?</h3>
+                    <ul>
+                        <li>Affordable fashion combos</li>
+                        <li>Daily new drops and fresh collections</li>
+                        <li>Personalized Gujarati service</li>
+                        <li>Quality fabrics and trendy designs</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="contact-section">
+        <div class="container">
+            <h2 class="section-title">Contact Us</h2>
+            <div class="contact-grid">
+                <div class="contact-info">
+                    <div class="contact-item">
+                        <h3>Phone</h3>
+                        <a href="tel:+917878887678" class="contact-link">+91&nbsp;7878887678</a>
+                    </div>
+                    <div class="contact-item">
+                        <h3>Instagram</h3>
+                        <a href="https://instagram.com/neel.fashion.store" target="_blank" class="contact-link">@neel.fashion.store</a>
+                    </div>
+                    <div class="contact-item">
+                        <h3>Location</h3>
+                        <p>Soniwad, Parabazar, Lunawada, Mahisagar, Gujarat</p>
+                    </div>
+                </div>
+                <div class="map-container">
+                    <iframe 
+                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d29344.02647855!2d73.6!3d23.13!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x395c2b9f6b9a9f9f%3A0x0!2sLunawada%2C+Gujarat!5e0!3m2!1sen!2sin!4v1609459200000!5m2!1sen!2sin"
+                        allowfullscreen="" 
+                        loading="lazy">
+                    </iframe>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Product Modal -->
+    <div id="productModal" class="modal hidden">
+        <div class="modal-overlay" onclick="closeModal()"></div>
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+            <div class="modal-body">
+                <div class="modal-image">
+                    <img id="modalImage" src="" alt="" />
+                </div>
+                <div class="modal-details">
+                    <h3 id="modalName"></h3>
+                    <div id="modalCategory" class="modal-category"></div>
+                    <p id="modalDescription" class="modal-description"></p>
+                    <div id="modalPrice" class="modal-price"></div>
+                    
+                    <div class="size-selector">
+                        <label for="sizeSelect" class="form-label">Size:</label>
+                        <select id="sizeSelect" class="form-control">
+                            <!-- Options will be populated by JavaScript -->
+                        </select>
+                    </div>
+                    
+                    <button id="orderButton" class="order-btn">Order on WhatsApp</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
