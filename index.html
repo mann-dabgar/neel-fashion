@@ -3,34 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Neel Fashion Store - Street-meets-Ethnic Styles</title>
+    <title>Neel Fashion Store - Lunawada, Gujarat</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- Navigation -->
+    <!-- Navigation Header -->
     <nav class="navbar">
         <div class="navbar__inner">
             <div class="nav-logo">Neel Fashion</div>
+            
+            <!-- Navigation Menu -->
             <ul class="nav-menu">
-                <li><a href="#home" class="nav-link">Home</a></li>
+                <li><a href="#home" class="nav-link active">Home</a></li>
                 <li><a href="#products" class="nav-link">Products</a></li>
                 <li><a href="#about" class="nav-link">About</a></li>
                 <li><a href="#contact" class="nav-link">Contact</a></li>
             </ul>
+
+            <!-- Admin Access Controls -->
+            <div class="admin-access-controls">
+                <input type="password" id="adminSecretInput" placeholder="Enter admin password" class="admin-input">
+                <button id="adminAccessBtn" class="btn btn--secondary btn--sm">Unlock Admin</button>
+                <button id="hideAdminBtn" class="btn btn--outline btn--sm hidden">Hide Admin Panel</button>
+            </div>
+
+            <!-- Instagram Link -->
+            <div class="nav-social">
+                <a href="https://www.instagram.com/neel.fashion.store/" target="_blank" class="instagram-link">
+                    📸 Instagram
+                </a>
+            </div>
         </div>
+        
+        <!-- Admin Error Message -->
+        <div id="adminError" class="admin-error hidden">Invalid access code. Please try again.</div>
     </nav>
+
+    <!-- Loading Indicator -->
+    <div id="loadingIndicator" class="loading-indicator hidden">
+        <div class="loading-spinner"></div>
+    </div>
 
     <!-- Home Section -->
     <section id="home" class="hero">
         <div class="hero__content">
             <div class="hero-text">
-                <h1 class="hero-title">Street-meets-Ethnic Styles Delivered to Your Doorstep</h1>
-                <p class="hero-tagline">Discover the perfect blend of contemporary fashion and traditional elegance</p>
+                <h1 class="hero-title">Neel Fashion Store</h1>
+                <p class="hero-tagline">Street-meets-Ethnic Styles in Lunawada, Gujarat</p>
+                <p class="hero-description">Discover trendy fashion for men, women, kids & accessories</p>
                 <button class="cta-btn" onclick="scrollToProducts()">Shop Now</button>
             </div>
             <div class="hero-image">
-                <img src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1200&q=80" alt="Fashion Store" />
+                <img src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1200&q=80" alt="Fashion Store" width="600" height="320" loading="eager" />
             </div>
         </div>
     </section>
@@ -38,18 +65,26 @@
     <!-- Products Section -->
     <section id="products" class="products-section">
         <div class="container">
-            <h2 class="section-title">Our Products</h2>
+            <div class="products-header">
+                <h2 class="section-title">Products</h2>
+                <div class="product-counter">
+                    <span id="productCount">20</span> of 20 products
+                </div>
+            </div>
             
             <!-- Filters -->
             <div class="filters">
+                <div class="filter-label">Filter by Category</div>
                 <div class="category-filters">
                     <button class="filter-btn active" data-category="All">All</button>
-                    <button class="filter-btn" data-category="man-jeans">Man Jeans</button>
-                    <button class="filter-btn" data-category="man-shirt">Man Shirt</button>
-                    <button class="filter-btn" data-category="man-tshirt">Man Tshirt</button>
+                    <button class="filter-btn" data-category="Men">Men</button>
+                    <button class="filter-btn" data-category="Women">Women</button>
+                    <button class="filter-btn" data-category="Kids">Kids</button>
+                    <button class="filter-btn" data-category="Accessories">Accessories</button>
                 </div>
                 <div class="search-container">
                     <input type="text" id="searchInput" placeholder="Search products..." class="search-input">
+                    <div class="search-loading hidden">Searching...</div>
                 </div>
             </div>
 
@@ -57,19 +92,78 @@
             <div class="products-grid" id="productsGrid">
                 <!-- Products will be rendered here by JavaScript -->
             </div>
+            
+            <!-- Load More Button (for virtual scrolling) -->
+            <div class="load-more-container">
+                <button id="loadMoreBtn" class="btn btn--outline hidden">Load More Products</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Add Product Section (Hidden by default, admin only) -->
+    <section id="add-product" class="add-product-section hidden">
+        <div class="container">
+            <h2 class="section-title">Add Product</h2>
+            <div class="add-product-form">
+                <form id="productForm" class="product-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="productName" class="form-label">Product Name *</label>
+                            <input type="text" id="productName" class="form-control" required maxlength="100">
+                        </div>
+                        <div class="form-group">
+                            <label for="productPrice" class="form-label">Price (₹) *</label>
+                            <input type="number" id="productPrice" class="form-control" min="1" max="999999" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="productCategory" class="form-label">Category *</label>
+                            <select id="productCategory" class="form-control" required>
+                                <option value="">Select category</option>
+                                <option value="Men">Men</option>
+                                <option value="Women">Women</option>
+                                <option value="Kids">Kids</option>
+                                <option value="Accessories">Accessories</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="productSizes" class="form-label">Sizes (comma separated) *</label>
+                            <input type="text" id="productSizes" class="form-control" placeholder="S, M, L, XL" required maxlength="200">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="productImage" class="form-label">Image URL (optional - will use placeholder if blank or invalid)</label>
+                        <input type="url" id="productImage" class="form-control" placeholder="https://example.com/image.jpg">
+                        <div class="image-preview">
+                            <img id="imagePreview" class="preview-image hidden" alt="Image Preview" width="200" height="200">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="productDescription" class="form-label">Description *</label>
+                        <textarea id="productDescription" class="form-control" rows="3" required maxlength="500"></textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn btn--primary btn--full-width">Add Product</button>
+                </form>
+            </div>
         </div>
     </section>
 
     <!-- About Section -->
     <section id="about" class="about-section">
         <div class="container">
-            <h2 class="section-title">About Neel Fashion</h2>
+            <h2 class="section-title">About</h2>
             <div class="about-content">
                 <p>Welcome to Neel Fashion Store, your premier destination for contemporary and ethnic fashion in Lunawada, Gujarat. We pride ourselves on offering the perfect blend of street-style and traditional wear that speaks to the modern Indian fashion enthusiast.</p>
                 
                 <div class="store-info">
                     <h3>Store Details</h3>
-                    <p><strong>Address:</strong> Soniwad, Parabazar, Lunawada, Mahisagar, Gujarat</p>
+                    <p><strong>Address:</strong> Soniwad, Parabazar, Lunawada, Gujarat</p>
+                    <p><strong>Phone:</strong> +91 7878887678</p>
                     <p><strong>Operating Hours:</strong> 10 AM – 9 PM (Daily)</p>
                 </div>
 
@@ -89,25 +183,27 @@
     <!-- Contact Section -->
     <section id="contact" class="contact-section">
         <div class="container">
-            <h2 class="section-title">Contact Us</h2>
+            <h2 class="section-title">Contact</h2>
             <div class="contact-grid">
                 <div class="contact-info">
                     <div class="contact-item">
                         <h3>Phone</h3>
-                        <a href="tel:+917878887678" class="contact-link">+91&nbsp;7878887678</a>
+                        <a href="tel:+917878887678" class="contact-link">+91 7878887678</a>
                     </div>
                     <div class="contact-item">
                         <h3>Instagram</h3>
-                        <a href="https://instagram.com/neel.fashion.store" target="_blank" class="contact-link">@neel.fashion.store</a>
+                        <a href="https://www.instagram.com/neel.fashion.store/" target="_blank" class="contact-link">@neel.fashion.store</a>
                     </div>
                     <div class="contact-item">
                         <h3>Location</h3>
-                        <p>Soniwad, Parabazar, Lunawada, Mahisagar, Gujarat</p>
+                        <p>Soniwad, Parabazar, Lunawada, Gujarat</p>
                     </div>
                 </div>
                 <div class="map-container">
                     <iframe 
                         src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d29344.02647855!2d73.6!3d23.13!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x395c2b9f6b9a9f9f%3A0x0!2sLunawada%2C+Gujarat!5e0!3m2!1sen!2sin!4v1609459200000!5m2!1sen!2sin"
+                        width="100%" 
+                        height="300"
                         allowfullscreen="" 
                         loading="lazy">
                     </iframe>
@@ -123,7 +219,7 @@
             <button class="modal-close" onclick="closeModal()">&times;</button>
             <div class="modal-body">
                 <div class="modal-image">
-                    <img id="modalImage" src="" alt="" />
+                    <img id="modalImage" src="" alt="" width="400" height="400" loading="lazy" />
                 </div>
                 <div class="modal-details">
                     <h3 id="modalName"></h3>
@@ -138,10 +234,33 @@
                         </select>
                     </div>
                     
-                    <button id="orderButton" class="order-btn">Order on WhatsApp</button>
+                    <div class="modal-actions">
+                        <button id="orderButton" class="btn btn--primary">Order via WhatsApp</button>
+                        <button id="deleteButton" class="btn btn--outline admin-only hidden" onclick="confirmDelete()">Delete</button>
+                    </div>
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="modal hidden">
+        <div class="modal-overlay" onclick="closeDeleteModal()"></div>
+        <div class="modal-content modal-small">
+            <div class="modal-body">
+                <h3>Confirm Delete</h3>
+                <p>Are you sure you want to delete this product? This action cannot be undone.</p>
+                <div class="modal-actions">
+                    <button class="btn btn--primary" onclick="deleteProduct()">Yes, Delete</button>
+                    <button class="btn btn--outline" onclick="closeDeleteModal()">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toast" class="toast hidden">
+        <span id="toastMessage"></span>
     </div>
 
     <script src="app.js"></script>
