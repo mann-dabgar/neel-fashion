@@ -815,8 +815,8 @@ body {
   font-weight: var(--font-weight-bold);
   color: var(--color-primary);
   flex: 1;
-  text-align: center;
-  margin-left: -44px; /* Compensate for hamburger button */
+  text-align: left;
+   /* Compensate for hamburger button */
 }
 
 .nav-spacer {
