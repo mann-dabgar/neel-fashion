@@ -1,456 +1,396 @@
-// Performance optimized Neel Fashion Store app
-// Updated with robust image handling and fallback system
-
-// ========================================================================================
-// PERFORMANCE CONSTANTS & CONFIGURATION
-// ========================================================================================
-const PERFORMANCE_CONFIG = {
-    DEBOUNCE_DELAY: 300,
-    PRODUCTS_PER_LOAD: 20,
-    MAX_PRODUCTS: 20,
-    ADMIN_SECRET: 'neelfashion2025'
-};
-
-// Global placeholder image constant
-const PLACEHOLDER_IMG = 'https://via.placeholder.com/300x400?text=No+Image';
-
-// ========================================================================================
-// INITIAL DATA (First product with bad URL for testing)
-// ========================================================================================
-const initialProducts = [
-    {
-        "id": 1, "name": "Stylish Men's Kurta", "price": 899, "category": "Men",
-        "sizes": ["S", "M", "L", "XL"], "image": "https://invalid-url-for-testing.jpg",
-        "description": "Traditional kurta with modern fit", "dateAdded": "2025-01-01"
-    },
-    {
-        "id": 2, "name": "Women's Embroidered Kurti", "price": 1299, "category": "Women",
-        "sizes": ["XS", "S", "M", "L"], "image": "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=400&h=600&fit=crop",
-        "description": "Beautiful embroidered kurti for all occasions", "dateAdded": "2025-01-02"
-    },
-    {
-        "id": 3, "name": "Kids Cotton T-Shirt", "price": 449, "category": "Kids",
-        "sizes": ["2-3Y", "4-5Y", "6-7Y", "8-9Y"], "image": "https://images.unsplash.com/photo-1519238263530-99bdd11df2ea?w=400&h=600&fit=crop",
-        "description": "Soft cotton t-shirt for kids", "dateAdded": "2025-01-03"
-    },
-    {
-        "id": 4, "name": "Designer Handbag", "price": 1599, "category": "Accessories",
-        "sizes": ["One Size"], "image": "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=400&h=600&fit=crop",
-        "description": "Stylish handbag for daily use", "dateAdded": "2025-01-04"
-    },
-    {
-        "id": 5, "name": "Men's Casual Shirt", "price": 799, "category": "Men",
-        "sizes": ["S", "M", "L", "XL", "XXL"], "image": "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400&h=600&fit=crop",
-        "description": "Comfortable casual shirt", "dateAdded": "2025-01-05"
-    },
-    {
-        "id": 6, "name": "Women's Salwar Suit", "price": 1899, "category": "Women",  
-        "sizes": ["S", "M", "L", "XL"], "image": "https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=400&h=600&fit=crop",
-        "description": "Elegant salwar suit set", "dateAdded": "2025-01-06"
-    },
-    {
-        "id": 7, "name": "Kids Ethnic Wear", "price": 649, "category": "Kids",
-        "sizes": ["2-3Y", "4-5Y", "6-7Y"], "image": "https://images.unsplash.com/photo-1503919005314-30d93d07d823?w=400&h=600&fit=crop",
-        "description": "Traditional ethnic wear for kids", "dateAdded": "2025-01-07"
-    },
-    {
-        "id": 8, "name": "Fashion Sunglasses", "price": 599, "category": "Accessories",
-        "sizes": ["One Size"], "image": "https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=400&h=600&fit=crop",
-        "description": "Trendy sunglasses", "dateAdded": "2025-01-08"
-    },
-    {
-        "id": 9, "name": "Men's Formal Pants", "price": 1199, "category": "Men",
-        "sizes": ["30", "32", "34", "36", "38"], "image": "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=400&h=600&fit=crop",
-        "description": "Premium formal pants", "dateAdded": "2025-01-09"
-    },
-    {
-        "id": 10, "name": "Women's Lehenga", "price": 2999, "category": "Women",
-        "sizes": ["S", "M", "L"], "image": "https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=400&h=600&fit=crop",
-        "description": "Beautiful designer lehenga", "dateAdded": "2025-01-10"
-    },
-    {
-        "id": 11, "name": "Kids Denim Jacket", "price": 849, "category": "Kids",
-        "sizes": ["4-5Y", "6-7Y", "8-9Y", "10-11Y"], "image": "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=400&h=600&fit=crop",
-        "description": "Stylish denim jacket for kids", "dateAdded": "2025-01-11"
-    },
-    {
-        "id": 12, "name": "Leather Wallet", "price": 699, "category": "Accessories",
-        "sizes": ["One Size"], "image": "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=400&h=600&fit=crop",
-        "description": "Premium leather wallet", "dateAdded": "2025-01-12"
-    },
-    {
-        "id": 13, "name": "Men's Blazer", "price": 2499, "category": "Men",
-        "sizes": ["S", "M", "L", "XL"], "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=600&fit=crop",
-        "description": "Formal blazer for special occasions", "dateAdded": "2025-01-13"
-    },
-    {
-        "id": 14, "name": "Women's Saree", "price": 1799, "category": "Women",
-        "sizes": ["One Size"], "image": "https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=400&h=600&fit=crop",
-        "description": "Elegant traditional saree", "dateAdded": "2025-01-14"
-    },
-    {
-        "id": 15, "name": "Kids School Uniform", "price": 549, "category": "Kids",
-        "sizes": ["6-7Y", "8-9Y", "10-11Y", "12-13Y"], "image": "https://images.unsplash.com/photo-1519238263530-99bdd11df2ea?w=400&h=600&fit=crop",
-        "description": "Quality school uniform set", "dateAdded": "2025-01-15"
-    },
-    {
-        "id": 16, "name": "Designer Watch", "price": 2199, "category": "Accessories",
-        "sizes": ["One Size"], "image": "https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=400&h=600&fit=crop",
-        "description": "Stylish designer watch", "dateAdded": "2025-01-16"
-    },
-    {
-        "id": 17, "name": "Men's Track Suit", "price": 1399, "category": "Men",
-        "sizes": ["M", "L", "XL", "XXL"], "image": "https://images.unsplash.com/photo-1571945153237-4929e783af4a?w=400&h=600&fit=crop",
-        "description": "Comfortable track suit", "dateAdded": "2025-01-17"
-    },
-    {
-        "id": 18, "name": "Women's Western Dress", "price": 1099, "category": "Women",
-        "sizes": ["XS", "S", "M", "L", "XL"], "image": "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=400&h=600&fit=crop",
-        "description": "Trendy western dress", "dateAdded": "2025-01-18"
-    },
-    {
-        "id": 19, "name": "Kids Party Wear", "price": 999, "category": "Kids",
-        "sizes": ["2-3Y", "4-5Y", "6-7Y", "8-9Y"], "image": "https://images.unsplash.com/photo-1503919005314-30d93d07d823?w=400&h=600&fit=crop",
-        "description": "Beautiful party wear for kids", "dateAdded": "2025-01-19"
-    },
-    {
-        "id": 20, "name": "Fashion Belt", "price": 399, "category": "Accessories",
-        "sizes": ["S", "M", "L"], "image": "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=400&h=600&fit=crop",
-        "description": "Stylish fashion belt", "dateAdded": "2025-01-20"
-    }
+// Initial product data from the provided JSON
+const initialProductsData = [
+  {
+    "id": 1,
+    "name": "Premium Cotton T-Shirt",
+    "price": 599,
+    "category": "Tops",
+    "sizes": ["S", "M", "L", "XL"],
+    "image": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop",
+    "description": "Comfortable cotton t-shirt perfect for daily wear",
+    "dateAdded": "2025-01-15"
+  },
+  {
+    "id": 2,
+    "name": "Denim Cargo Pants",
+    "price": 1299,
+    "category": "Bottoms",
+    "sizes": ["28", "30", "32", "34", "36"],
+    "image": "https://images.unsplash.com/photo-1542272604-787c3835535d?w=400&h=400&fit=crop",
+    "description": "Stylish cargo pants with multiple pockets",
+    "dateAdded": "2025-01-16"
+  },
+  {
+    "id": 3,
+    "name": "Casual Hoodie",
+    "price": 899,
+    "category": "Outerwear",
+    "sizes": ["S", "M", "L", "XL"],
+    "image": "https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=400&h=400&fit=crop",
+    "description": "Warm and comfortable hoodie for cool weather",
+    "dateAdded": "2025-01-17"
+  },
+  {
+    "id": 4,
+    "name": "Floral Summer Dress",
+    "price": 799,
+    "category": "Dresses",
+    "sizes": ["XS", "S", "M", "L"],
+    "image": "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=400&h=400&fit=crop",
+    "description": "Beautiful floral dress perfect for summer",
+    "dateAdded": "2025-01-18"
+  },
+  {
+    "id": 5,
+    "name": "Linen Co-ord Set",
+    "price": 1199,
+    "category": "Sets",
+    "sizes": ["S", "M", "L", "XL"],
+    "image": "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=400&h=400&fit=crop",
+    "description": "Trendy linen co-ordinate set for casual wear",
+    "dateAdded": "2025-01-19"
+  },
+  {
+    "id": 6,
+    "name": "Traditional Kurta",
+    "price": 649,
+    "category": "Ethnic",
+    "sizes": ["S", "M", "L", "XL", "XXL"],
+    "image": "https://images.unsplash.com/photo-1583391733956-6c78276477e2?w=400&h=400&fit=crop",
+    "description": "Classic kurta for traditional occasions",
+    "dateAdded": "2025-01-20"
+  },
+  {
+    "id": 7,
+    "name": "Designer Handbag",
+    "price": 899,
+    "category": "Accessories",
+    "sizes": ["One Size"],
+    "image": "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=400&h=400&fit=crop",
+    "description": "Stylish handbag to complete your look",
+    "dateAdded": "2025-01-21"
+  },
+  {
+    "id": 8,
+    "name": "Sports Track Suit",
+    "price": 1499,
+    "category": "Sets",
+    "sizes": ["S", "M", "L", "XL"],
+    "image": "https://images.unsplash.com/photo-1544966503-7cc5ac882d5c?w=400&h=400&fit=crop",
+    "description": "Comfortable track suit for sports and fitness",
+    "dateAdded": "2025-01-22"
+  },
+  {
+    "id": 9,
+    "name": "Formal Blazer",
+    "price": 1799,
+    "category": "Outerwear",
+    "sizes": ["S", "M", "L", "XL"],
+    "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop",
+    "description": "Professional blazer for formal occasions",
+    "dateAdded": "2025-01-23"
+  },
+  {
+    "id": 10,
+    "name": "Casual Jeans",
+    "price": 999,
+    "category": "Bottoms",
+    "sizes": ["28", "30", "32", "34", "36"],
+    "image": "https://images.unsplash.com/photo-1542272604-787c3835535d?w=400&h=400&fit=crop",
+    "description": "Classic blue jeans for everyday wear",
+    "dateAdded": "2025-01-24"
+  },
+  {
+    "id": 11,
+    "name": "Printed Scarf",
+    "price": 299,
+    "category": "Accessories",
+    "sizes": ["One Size"],
+    "image": "https://images.unsplash.com/photo-1601924994987-69e26d50dc26?w=400&h=400&fit=crop",
+    "description": "Elegant printed scarf for all seasons",
+    "dateAdded": "2025-01-25"
+  },
+  {
+    "id": 12,
+    "name": "Cotton Polo Shirt",
+    "price": 699,
+    "category": "Tops",
+    "sizes": ["S", "M", "L", "XL"],
+    "image": "https://images.unsplash.com/photo-1503341455253-b2e723bb3dbb?w=400&h=400&fit=crop",
+    "description": "Classic polo shirt for casual and semi-formal wear",
+    "dateAdded": "2025-01-26"
+  },
+  {
+    "id": 13,
+    "name": "Maxi Dress",
+    "price": 1099,
+    "category": "Dresses",
+    "sizes": ["XS", "S", "M", "L"],
+    "image": "https://images.unsplash.com/photo-1566479179817-c0ae29dfa3d7?w=400&h=400&fit=crop",
+    "description": "Elegant maxi dress for special occasions",
+    "dateAdded": "2025-01-27"
+  },
+  {
+    "id": 14,
+    "name": "Leather Jacket",
+    "price": 2499,
+    "category": "Outerwear",
+    "sizes": ["S", "M", "L", "XL"],
+    "image": "https://images.unsplash.com/photo-1551028719-00167b16eac5?w=400&h=400&fit=crop",
+    "description": "Premium leather jacket for style and warmth",
+    "dateAdded": "2025-01-28"
+  },
+  {
+    "id": 15,
+    "name": "Ethnic Palazzo Set",
+    "price": 849,
+    "category": "Ethnic",
+    "sizes": ["S", "M", "L", "XL"],
+    "image": "https://images.unsplash.com/photo-1583391733956-6c78276477e2?w=400&h=400&fit=crop",
+    "description": "Comfortable palazzo set for traditional wear",
+    "dateAdded": "2025-01-29"
+  },
+  {
+    "id": 16,
+    "name": "Denim Shorts",
+    "price": 549,
+    "category": "Bottoms",
+    "sizes": ["28", "30", "32", "34"],
+    "image": "https://images.unsplash.com/photo-1591195853828-11db59a44f6b?w=400&h=400&fit=crop",
+    "description": "Trendy denim shorts for summer",
+    "dateAdded": "2025-01-30"
+  },
+  {
+    "id": 17,
+    "name": "Casual Sneakers",
+    "price": 1299,
+    "category": "Accessories",
+    "sizes": ["6", "7", "8", "9", "10"],
+    "image": "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=400&h=400&fit=crop",
+    "description": "Comfortable sneakers for everyday wear",
+    "dateAdded": "2025-01-31"
+  },
+  {
+    "id": 18,
+    "name": "Tank Top",
+    "price": 399,
+    "category": "Tops",
+    "sizes": ["S", "M", "L", "XL"],
+    "image": "https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=400&h=400&fit=crop",
+    "description": "Light and comfortable tank top",
+    "dateAdded": "2025-02-01"
+  },
+  {
+    "id": 19,
+    "name": "Party Dress",
+    "price": 1599,
+    "category": "Dresses",
+    "sizes": ["XS", "S", "M", "L"],
+    "image": "https://images.unsplash.com/photo-1566479179817-c0ae29dfa3d7?w=400&h=400&fit=crop",
+    "description": "Stunning party dress for special events",
+    "dateAdded": "2025-02-02"
+  },
+  {
+    "id": 20,
+    "name": "Traditional Dupatta",
+    "price": 449,
+    "category": "Ethnic",
+    "sizes": ["One Size"],
+    "image": "https://images.unsplash.com/photo-1601924994987-69e26d50dc26?w=400&h=400&fit=crop",
+    "description": "Beautiful dupatta to complement ethnic wear",
+    "dateAdded": "2025-02-03"
+  }
 ];
 
-// ========================================================================================
-// GLOBAL STATE
-// ========================================================================================
-let products = [...initialProducts];
-let filteredProducts = [...initialProducts];
+// Global variables
+let products = [...initialProductsData];
+let nextProductId = 21;
+let filteredProducts = [...products];
 let selectedProduct = null;
 let activeCategory = 'All';
 let currentSearch = '';
 let isAdminMode = false;
-let nextProductId = 21;
+const MAX_PRODUCTS = 20;
+const ADMIN_SECRET = 'neelfashion2025';
 
-// Performance optimization: Debounced functions
-let searchTimeout;
-let filterTimeout;
+// Store info
+const storeInfo = {
+    name: "Neel Fashion Store",
+    location: "Soniwad, Parabazar, Lunawada, Gujarat",
+    phone: "+917878887678",
+    instagram: "https://www.instagram.com/neel.fashion.store/"
+};
 
-// ========================================================================================
-// DEBOUNCE UTILITY
-// ========================================================================================
-function debounce(func, delay) {
-    let timeoutId;
-    return function (...args) {
-        clearTimeout(timeoutId);
-        timeoutId = setTimeout(() => func.apply(this, args), delay);
-    };
-}
-
-// ========================================================================================
-// IMAGE HANDLING FUNCTIONS
-// ========================================================================================
-function createImageElement(product) {
-    const img = document.createElement('img');
-    img.className = 'product-img';
-    img.alt = product.name;
-    img.loading = 'lazy';
-    img.style.opacity = '0';
+// Initialize the application
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM loaded, initializing mobile app...');
     
-    // Create loading spinner
-    const loadingSpinner = document.createElement('div');
-    loadingSpinner.className = 'img-loading';
-    
-    // Set up event handlers
-    img.onload = function() {
-        // Remove loading spinner
-        const spinner = this.parentElement.querySelector('.img-loading');
-        if (spinner) {
-            spinner.remove();
-        }
-        this.style.opacity = '1';
-    };
-    
-    img.onerror = function() {
-        // Remove loading spinner
-        const spinner = this.parentElement.querySelector('.img-loading');
-        if (spinner) {
-            spinner.remove();
-        }
-        // Set placeholder and apply fallback styling
-        this.src = PLACEHOLDER_IMG;
-        this.classList.add('img-fallback');
-        this.style.opacity = '1';
-    };
-    
-    // Set initial src
-    img.src = product.image || PLACEHOLDER_IMG;
-    
-    return { img, loadingSpinner };
-}
-
-function validateImageUrl(url) {
-    if (!url || !url.trim()) {
-        return false;
-    }
-    
-    // Simple regex to check if URL starts with http/https
-    const urlRegex = /^https?:\/\/.+/i;
-    return urlRegex.test(url.trim());
-}
-
-// ========================================================================================
-// CORE RENDERING FUNCTIONS
-// ========================================================================================
-function renderProducts() {
-    const productsGrid = document.getElementById('productsGrid');
-    if (!productsGrid) {
-        console.error('Products grid not found');
-        return;
-    }
-
-    console.log('Rendering products:', filteredProducts.length);
-
-    if (filteredProducts.length === 0) {
-        productsGrid.innerHTML = `
-            <div style="grid-column: 1/-1; text-align: center; padding: 2rem; color: var(--color-text-secondary);">
-                No products found matching your criteria.
-            </div>
-        `;
-        return;
-    }
-
-    // Clear the grid
-    productsGrid.innerHTML = '';
-
-    // Create product cards
-    filteredProducts.forEach(product => {
-        const productCard = document.createElement('div');
-        productCard.className = 'product-card slide-in-up';
-        productCard.setAttribute('data-product-id', product.id);
-        productCard.onclick = () => openModal(product.id);
-
-        // Create image container
-        const imageContainer = document.createElement('div');
-        imageContainer.className = 'product-image';
-
-        // Create image with proper error handling
-        const { img, loadingSpinner } = createImageElement(product);
-        imageContainer.appendChild(img);
-        imageContainer.appendChild(loadingSpinner);
-
-        // Create overlay
-        const overlay = document.createElement('div');
-        overlay.className = 'product-overlay';
-        overlay.textContent = 'View Details';
-        imageContainer.appendChild(overlay);
-
-        // Create delete button if admin mode
-        if (isAdminMode) {
-            const deleteBtn = document.createElement('button');
-            deleteBtn.className = 'product-delete-btn';
-            deleteBtn.innerHTML = '×';
-            deleteBtn.title = 'Delete Product';
-            deleteBtn.onclick = (e) => {
-                e.stopPropagation();
-                quickDeleteProduct(product.id);
-            };
-            imageContainer.appendChild(deleteBtn);
-        }
-
-        // Create product info
-        const productInfo = document.createElement('div');
-        productInfo.className = 'product-info';
-        productInfo.innerHTML = `
-            <h3 class="product-name">${product.name}</h3>
-            <span class="product-category">${product.category}</span>
-            <p class="product-price">₹${product.price.toLocaleString('en-IN')}</p>
-            <div class="product-sizes">Sizes: ${product.sizes.join(', ')}</div>
-        `;
-
-        // Assemble card
-        productCard.appendChild(imageContainer);
-        productCard.appendChild(productInfo);
-        productsGrid.appendChild(productCard);
-    });
-
-    console.log('Products rendered successfully');
-}
-
-function updateProductCounter() {
-    const productCountElement = document.getElementById('productCount');
-    if (productCountElement) {
-        productCountElement.textContent = products.length;
-    }
-}
-
-// ========================================================================================
-// SEARCH & FILTERING WITH DEBOUNCING
-// ========================================================================================
-const debouncedSearch = debounce(function(query) {
-    console.log('Performing search:', query);
-    currentSearch = query;
-    applyFilters();
-    
-    // Hide search loading
-    const searchLoading = document.querySelector('.search-loading');
-    if (searchLoading) {
-        searchLoading.classList.add('hidden');
-    }
-}, PERFORMANCE_CONFIG.DEBOUNCE_DELAY);
-
-const debouncedFilter = debounce(function(category) {
-    console.log('Performing filter:', category);
-    activeCategory = category;
-    applyFilters();
-}, PERFORMANCE_CONFIG.DEBOUNCE_DELAY);
-
-function handleSearch(e) {
-    const query = e.target.value.toLowerCase().trim();
-    
-    // Show search loading
-    const searchLoading = document.querySelector('.search-loading');
-    if (searchLoading) {
-        searchLoading.classList.remove('hidden');
-    }
-    
-    debouncedSearch(query);
-}
-
-function handleCategoryFilter(button) {
-    // Update active button
-    const filterButtons = document.querySelectorAll('.filter-btn');
-    filterButtons.forEach(btn => btn.classList.remove('active'));
-    button.classList.add('active');
-    
-    const category = button.dataset.category;
-    debouncedFilter(category);
-}
-
-function applyFilters() {
-    console.log('Applying filters - Category:', activeCategory, 'Search:', currentSearch);
-    
-    let filtered = [...products];
-
-    // Apply category filter
-    if (activeCategory !== 'All') {
-        filtered = filtered.filter(product => product.category === activeCategory);
-    }
-
-    // Apply search filter
-    if (currentSearch) {
-        filtered = filtered.filter(product =>
-            product.name.toLowerCase().includes(currentSearch) ||
-            product.description.toLowerCase().includes(currentSearch) ||
-            product.category.toLowerCase().includes(currentSearch)
-        );
-    }
-
-    filteredProducts = filtered;
+    // Initialize all functionality
+    setupMobileMenu();
+    setupAdminAccess();
+    setupEventListeners();
+    setupNavigation();
+    setupImagePreview();
+    setupModalHandlers();
     renderProducts();
+    updateProductCounter();
     
-    console.log('Filters applied, showing', filteredProducts.length, 'products');
-}
+    console.log('Mobile app initialized successfully');
+});
 
-// ========================================================================================
-// ADMIN FUNCTIONALITY
-// ========================================================================================
-function setupAdminAccess() {
-    const adminInput = document.getElementById('adminSecretInput');
-    const adminBtn = document.getElementById('adminAccessBtn');
-    const hideAdminBtn = document.getElementById('hideAdminBtn');
+// Setup mobile hamburger menu
+function setupMobileMenu() {
+    console.log('Setting up mobile menu...');
     
-    if (adminBtn) {
-        adminBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            handleAdminAccess();
-        });
-    }
+    const hamburgerBtn = document.getElementById('hamburgerBtn');
+    const mobileMenu = document.getElementById('mobileMenu');
+    const menuOverlay = document.getElementById('menuOverlay');
+    const menuCloseBtn = document.getElementById('menuCloseBtn');
     
-    if (hideAdminBtn) {
-        hideAdminBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            disableAdminMode();
-        });
-    }
-    
-    if (adminInput) {
-        adminInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                handleAdminAccess();
-            }
-        });
-        
-        adminInput.addEventListener('input', function() {
-            hideAdminError();
-        });
-    }
-}
-
-function handleAdminAccess() {
-    const adminInput = document.getElementById('adminSecretInput');
-    if (!adminInput) {
-        console.error('Admin input not found');
+    if (!hamburgerBtn || !mobileMenu) {
+        console.error('Mobile menu elements not found');
         return;
     }
     
-    const enteredSecret = adminInput.value.trim();
-    console.log('Admin access attempt with:', enteredSecret);
+    // Open menu
+    hamburgerBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        openMobileMenu();
+    });
     
-    if (enteredSecret === PERFORMANCE_CONFIG.ADMIN_SECRET) {
-        console.log('Admin access granted');
-        enableAdminMode();
-        adminInput.value = '';
-        hideAdminError();
-    } else {
-        console.log('Admin access denied');
-        showAdminError();
-        adminInput.value = '';
+    // Close menu via close button
+    if (menuCloseBtn) {
+        menuCloseBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            closeMobileMenu();
+        });
+    }
+    
+    // Close menu via overlay
+    if (menuOverlay) {
+        menuOverlay.addEventListener('click', function(e) {
+            e.preventDefault();
+            closeMobileMenu();
+        });
+    }
+    
+    // Close menu on escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && mobileMenu.classList.contains('active')) {
+            closeMobileMenu();
+        }
+    });
+    
+    console.log('Mobile menu setup complete');
+}
+
+// Open mobile menu
+function openMobileMenu() {
+    const hamburgerBtn = document.getElementById('hamburgerBtn');
+    const mobileMenu = document.getElementById('mobileMenu');
+    
+    if (hamburgerBtn && mobileMenu) {
+        hamburgerBtn.classList.add('active');
+        mobileMenu.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        console.log('Mobile menu opened');
     }
 }
 
-function enableAdminMode() {
-    console.log('Enabling admin mode');
+// Close mobile menu
+function closeMobileMenu() {
+    const hamburgerBtn = document.getElementById('hamburgerBtn');
+    const mobileMenu = document.getElementById('mobileMenu');
     
+    if (hamburgerBtn && mobileMenu) {
+        hamburgerBtn.classList.remove('active');
+        mobileMenu.classList.remove('active');
+        document.body.style.overflow = 'auto';
+        console.log('Mobile menu closed');
+    }
+}
+
+// Setup compact footer admin access
+function setupAdminAccess() {
+    console.log('Setting up compact admin access...');
+    
+    const adminSecretInput = document.getElementById('adminSecretInput');
+    const adminAccessBtn = document.getElementById('adminAccessBtn');
+    const addProductBtn = document.getElementById('addProductBtn');
+    const adminError = document.getElementById('adminError');
+    
+    if (!adminSecretInput || !adminAccessBtn) {
+        console.error('Admin elements not found');
+        return;
+    }
+    
+    // Admin login
+    adminAccessBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        console.log('Admin login clicked');
+        const enteredSecret = adminSecretInput.value.trim();
+        
+        if (enteredSecret === ADMIN_SECRET) {
+            console.log('Correct admin password');
+            enableAdminMode();
+            adminSecretInput.value = '';
+            hideAdminError();
+        } else {
+            console.log('Incorrect admin password');
+            showAdminError();
+            adminSecretInput.value = '';
+        }
+    });
+    
+    // Add product button
+    if (addProductBtn) {
+        addProductBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log('Add product button clicked');
+            openAddProductForm();
+        });
+    }
+    
+    // Enter key support
+    adminSecretInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            adminAccessBtn.click();
+        }
+    });
+    
+    // Hide error on input
+    adminSecretInput.addEventListener('input', function() {
+        hideAdminError();
+    });
+    
+    console.log('Admin access setup complete');
+}
+
+// Enable admin mode
+function enableAdminMode() {
+    console.log('Enabling admin mode...');
     isAdminMode = true;
     document.body.classList.add('admin-mode');
     
-    const addProductSection = document.getElementById('add-product');
-    const adminBtn = document.getElementById('adminAccessBtn');
-    const hideAdminBtn = document.getElementById('hideAdminBtn');
+    const adminAccessBtn = document.getElementById('adminAccessBtn');
+    const addProductBtn = document.getElementById('addProductBtn');
     
-    if (addProductSection) {
-        addProductSection.classList.remove('hidden');
-        console.log('Add product section shown');
-    } else {
-        console.error('Add product section not found');
+    if (adminAccessBtn) {
+        adminAccessBtn.classList.add('hidden');
+        console.log('Login button hidden');
+    }
+    if (addProductBtn) {
+        addProductBtn.classList.remove('hidden');
+        console.log('Add Product button shown');
     }
     
-    if (adminBtn) adminBtn.classList.add('hidden');
-    if (hideAdminBtn) hideAdminBtn.classList.remove('hidden');
-    
     showToast('Admin access granted!', 'success');
-    renderProducts(); // Re-render to show delete buttons
+    renderProducts();
+    console.log('Admin mode enabled successfully');
 }
 
-function disableAdminMode() {
-    console.log('Disabling admin mode');
-    
-    isAdminMode = false;
-    document.body.classList.remove('admin-mode');
-    
-    const addProductSection = document.getElementById('add-product');
-    const adminBtn = document.getElementById('adminAccessBtn');
-    const hideAdminBtn = document.getElementById('hideAdminBtn');
-    
-    if (addProductSection) addProductSection.classList.add('hidden');
-    if (adminBtn) adminBtn.classList.remove('hidden');
-    if (hideAdminBtn) hideAdminBtn.classList.add('hidden');
-    
-    showToast('Admin mode disabled', 'info');
-    renderProducts(); // Re-render to hide delete buttons
-}
-
+// Show/hide admin error
 function showAdminError() {
     const adminError = document.getElementById('adminError');
     if (adminError) {
@@ -461,116 +401,252 @@ function showAdminError() {
 
 function hideAdminError() {
     const adminError = document.getElementById('adminError');
-    if (adminError) {
-        adminError.classList.add('hidden');
+    if (adminError) adminError.classList.add('hidden');
+}
+
+// Open add product form
+function openAddProductForm() {
+    const addProductSection = document.getElementById('add-product');
+    if (addProductSection) {
+        addProductSection.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+        console.log('Add product form opened');
     }
 }
 
-// ========================================================================================
-// PRODUCT MANAGEMENT
-// ========================================================================================
-function addNewProduct() {
-    console.log('Adding new product');
-    
-    const productName = document.getElementById('productName');
-    const productPrice = document.getElementById('productPrice');
-    const productCategory = document.getElementById('productCategory');
-    const productSizes = document.getElementById('productSizes');
-    const productImage = document.getElementById('productImage');
-    const productDescription = document.getElementById('productDescription');
-    
-    if (!productName || !productPrice || !productCategory || !productSizes || !productImage || !productDescription) {
-        console.error('Form elements not found');
-        return;
-    }
-    
-    let imageUrl = productImage.value.trim();
-    
-    // Validate and set placeholder if needed
-    if (!validateImageUrl(imageUrl)) {
-        imageUrl = PLACEHOLDER_IMG;
-    }
-    
-    const productData = {
-        name: productName.value.trim(),
-        price: parseInt(productPrice.value),
-        category: productCategory.value,
-        sizes: productSizes.value.split(',').map(s => s.trim()).filter(s => s),
-        image: imageUrl,
-        description: productDescription.value.trim()
-    };
-    
-    // Validation
-    const validation = validateProductData(productData);
-    if (!validation.isValid) {
-        showToast(validation.error, 'error');
-        return;
-    }
-    
-    // Create new product
-    const newProduct = {
-        ...productData,
-        id: nextProductId++,
-        dateAdded: new Date().toISOString().split('T')[0]
-    };
-    
-    // Handle max products with FIFO removal and ID reassignment
-    let removedProduct = null;
-    if (products.length >= PERFORMANCE_CONFIG.MAX_PRODUCTS) {
-        // Find oldest product
-        const oldestProduct = products.reduce((oldest, product) => {
-            return new Date(product.dateAdded) < new Date(oldest.dateAdded) ? product : oldest;
-        });
+// Close add product form
+function closeAddProductForm() {
+    const addProductSection = document.getElementById('add-product');
+    if (addProductSection) {
+        addProductSection.classList.add('hidden');
+        document.body.style.overflow = 'auto';
         
-        // Remove oldest
-        products = products.filter(p => p.id !== oldestProduct.id);
-        removedProduct = oldestProduct;
+        // Reset form
+        const productForm = document.getElementById('productForm');
+        const imagePreview = document.getElementById('imagePreview');
+        if (productForm) productForm.reset();
+        if (imagePreview) imagePreview.classList.add('hidden');
+        
+        console.log('Add product form closed');
+    }
+}
+
+// Setup modal event handlers
+function setupModalHandlers() {
+    console.log('Setting up modal handlers...');
+    
+    // Product modal close button
+    const modalCloseBtn = document.getElementById('modalCloseBtn');
+    if (modalCloseBtn) {
+        modalCloseBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            closeModal();
+        });
     }
     
-    // Add new product with ID 1, shift others up
-    newProduct.id = 1;
-    products = reassignProductIds([newProduct, ...products]);
+    // Delete modal buttons
+    const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+    const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
     
-    // Reset form
+    if (confirmDeleteBtn) {
+        confirmDeleteBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            deleteProduct();
+        });
+    }
+    
+    if (cancelDeleteBtn) {
+        cancelDeleteBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            closeDeleteModal();
+        });
+    }
+    
+    // Delete button in product modal
+    const deleteButton = document.getElementById('deleteButton');
+    if (deleteButton) {
+        deleteButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            confirmDelete();
+        });
+    }
+    
+    console.log('Modal handlers setup complete');
+}
+
+// Setup event listeners
+function setupEventListeners() {
+    console.log('Setting up event listeners...');
+    
+    // Category filter buttons
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    filterButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const category = this.dataset.category;
+            setActiveFilter(this);
+            filterByCategory(category);
+        });
+    });
+
+    // Search input with debounce
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        let searchTimeout;
+        searchInput.addEventListener('input', function(e) {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                const searchTerm = e.target.value.toLowerCase().trim();
+                currentSearch = searchTerm;
+                applyFilters();
+            }, 300);
+        });
+    }
+
+    // Product form submission
     const productForm = document.getElementById('productForm');
+    if (productForm) {
+        productForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            addNewProduct();
+        });
+    }
+    
+    // Close add product form
+    const closeAddProduct = document.getElementById('closeAddProduct');
+    if (closeAddProduct) {
+        closeAddProduct.addEventListener('click', function(e) {
+            e.preventDefault();
+            closeAddProductForm();
+        });
+    }
+
+    // Global escape key handler
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeModal();
+            closeDeleteModal();
+            closeAddProductForm();
+            closeMobileMenu();
+        }
+    });
+    
+    console.log('Event listeners setup complete');
+}
+
+// Setup navigation with mobile menu integration
+function setupNavigation() {
+    console.log('Setting up navigation...');
+    
+    const navLinks = document.querySelectorAll('.mobile-nav-link');
+    
+    navLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            // Don't prevent default for external links
+            if (this.getAttribute('target') === '_blank') return;
+            
+            e.preventDefault();
+            const targetId = this.getAttribute('href');
+            
+            // Close mobile menu first
+            closeMobileMenu();
+            
+            // Update active nav link
+            navLinks.forEach(l => l.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Scroll to section
+            if (targetId.startsWith('#')) {
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    const navbarHeight = 60;
+                    const elementPosition = targetElement.getBoundingClientRect().top;
+                    const offsetPosition = elementPosition + window.pageYOffset - navbarHeight;
+
+                    window.scrollTo({
+                        top: Math.max(0, offsetPosition),
+                        behavior: 'smooth'
+                    });
+                }
+            }
+        });
+    });
+    
+    console.log('Navigation setup complete');
+}
+
+// Setup image preview
+function setupImagePreview() {
+    const productImageInput = document.getElementById('productImage');
     const imagePreview = document.getElementById('imagePreview');
     
-    if (productForm) productForm.reset();
-    if (imagePreview) imagePreview.classList.add('hidden');
+    if (!productImageInput || !imagePreview) return;
     
-    // Update display
-    applyFilters();
-    updateProductCounter();
-    
-    // Show message
-    const message = removedProduct 
-        ? `Product added! Removed oldest: ${removedProduct.name}`
-        : 'Product added successfully!';
-    const type = removedProduct ? 'warning' : 'success';
-    
-    showToast(message, type);
-    
-    // Scroll to products
-    setTimeout(() => scrollToProducts(), 500);
+    productImageInput.addEventListener('input', function() {
+        const imageUrl = this.value.trim();
+        
+        if (imageUrl) {
+            imagePreview.src = imageUrl;
+            imagePreview.classList.remove('hidden');
+            
+            imagePreview.onerror = function() {
+                this.classList.add('hidden');
+            };
+        } else {
+            imagePreview.classList.add('hidden');
+        }
+    });
 }
 
-function reassignProductIds(productList) {
-    return productList.map((product, index) => ({
-        ...product,
-        id: index + 1
-    }));
-}
-
-function validateProductData(data) {
-    if (!data.name) return { isValid: false, error: 'Product name is required' };
-    if (!data.price || data.price <= 0) return { isValid: false, error: 'Valid price is required' };
-    if (!data.category) return { isValid: false, error: 'Category is required' };
-    if (data.sizes.length === 0) return { isValid: false, error: 'At least one size is required' };
-    if (!data.description) return { isValid: false, error: 'Description is required' };
+// Render products
+function renderProducts() {
+    const productsGrid = document.getElementById('productsGrid');
+    if (!productsGrid) return;
     
-    return { isValid: true };
+    if (filteredProducts.length === 0) {
+        productsGrid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 2rem; color: var(--color-text-secondary);">No products found matching your criteria.</div>';
+        return;
+    }
+    
+    productsGrid.innerHTML = filteredProducts.map(product => `
+        <div class="product-card slide-in-up" data-product-id="${product.id}">
+            <div class="product-image">
+                <img src="${product.image}" alt="${product.name}" onerror="this.src='https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400'" loading="lazy" />
+                <div class="product-overlay">View Details</div>
+                ${isAdminMode ? `<button class="product-delete-btn" data-product-id="${product.id}" title="Delete Product">×</button>` : ''}
+            </div>
+            <div class="product-info">
+                <h3 class="product-name">${product.name}</h3>
+                <span class="product-category">${product.category}</span>
+                <p class="product-price">₹${product.price.toLocaleString()}</p>
+                <div class="product-sizes">Sizes: ${product.sizes.join(', ')}</div>
+            </div>
+        </div>
+    `).join('');
+
+    // Add click event listeners to product cards
+    const productCards = document.querySelectorAll('.product-card');
+    productCards.forEach(card => {
+        card.addEventListener('click', function(e) {
+            // Check if click is on delete button
+            if (e.target.classList.contains('product-delete-btn')) {
+                e.stopPropagation();
+                const productId = parseInt(e.target.dataset.productId);
+                quickDeleteProduct(productId);
+                return;
+            }
+            
+            // Open modal for product
+            const productId = parseInt(this.dataset.productId);
+            console.log('Product card clicked, opening modal for product:', productId);
+            openModal(productId);
+        });
+    });
+    
+    console.log('Products rendered:', filteredProducts.length);
 }
 
+// Quick delete product
 function quickDeleteProduct(productId) {
     console.log('Quick delete product:', productId);
     selectedProduct = products.find(p => p.id === productId);
@@ -579,66 +655,162 @@ function quickDeleteProduct(productId) {
     }
 }
 
-function deleteProduct() {
-    if (!selectedProduct) return;
-    
-    const productName = selectedProduct.name;
-    products = products.filter(p => p.id !== selectedProduct.id);
-    
-    // Reassign IDs after deletion
-    products = reassignProductIds(products);
-    
-    applyFilters();
-    updateProductCounter();
-    closeModal();
-    closeDeleteModal();
-    
-    showToast(`Deleted: ${productName}`, 'success');
+// Update product counter
+function updateProductCounter() {
+    const productCountElement = document.getElementById('productCount');
+    if (productCountElement) {
+        productCountElement.textContent = products.length;
+    }
 }
 
-// ========================================================================================
-// MODAL FUNCTIONALITY
-// ========================================================================================
+// Filter functions
+function setActiveFilter(activeButton) {
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    filterButtons.forEach(btn => btn.classList.remove('active'));
+    activeButton.classList.add('active');
+}
+
+function filterByCategory(category) {
+    activeCategory = category;
+    applyFilters();
+}
+
+function applyFilters() {
+    filteredProducts = [...products];
+
+    if (activeCategory !== 'All') {
+        filteredProducts = filteredProducts.filter(product => 
+            product.category === activeCategory
+        );
+    }
+
+    if (currentSearch) {
+        filteredProducts = filteredProducts.filter(product =>
+            product.name.toLowerCase().includes(currentSearch) ||
+            product.description.toLowerCase().includes(currentSearch)
+        );
+    }
+
+    renderProducts();
+}
+
+// Get selected sizes
+function getSelectedSizes() {
+    const sizeCheckboxes = document.querySelectorAll('.size-checkboxes input[type="checkbox"]:checked');
+    return Array.from(sizeCheckboxes).map(checkbox => checkbox.value);
+}
+
+// Add new product with FIFO
+function addNewProduct() {
+    console.log('Adding new product...');
+    
+    const name = document.getElementById('productName').value.trim();
+    const price = parseInt(document.getElementById('productPrice').value);
+    const category = document.getElementById('productCategory').value;
+    const sizes = getSelectedSizes();
+    const imageUrl = document.getElementById('productImage').value.trim();
+    const description = document.getElementById('productDescription').value.trim();
+
+    // Validation
+    const errors = validateProductForm();
+    if (errors.length > 0) {
+        showToast(errors[0], 'error');
+        return;
+    }
+
+    // Create new product
+    const newProduct = {
+        id: nextProductId++,
+        name: name,
+        price: price,
+        category: category,
+        sizes: sizes,
+        image: imageUrl,
+        description: description,
+        dateAdded: new Date().toISOString().split('T')[0]
+    };
+
+    // FIFO: Remove oldest if at capacity
+    let removedProduct = null;
+    if (products.length >= MAX_PRODUCTS) {
+        const oldestProduct = products.reduce((oldest, product) => {
+            return new Date(product.dateAdded) < new Date(oldest.dateAdded) ? product : oldest;
+        });
+        
+        products = products.filter(p => p.id !== oldestProduct.id);
+        removedProduct = oldestProduct;
+    }
+
+    // Add new product
+    products.unshift(newProduct);
+    
+    // Close form and update display
+    closeAddProductForm();
+    applyFilters();
+    updateProductCounter();
+    
+    // Show notification
+    if (removedProduct) {
+        showToast(`Product added! Removed oldest: ${removedProduct.name}`, 'warning');
+    } else {
+        showToast('Product added successfully!', 'success');
+    }
+    
+    // Scroll to products
+    setTimeout(() => scrollToProducts(), 500);
+}
+
+// Validate product form
+function validateProductForm() {
+    const name = document.getElementById('productName').value.trim();
+    const price = document.getElementById('productPrice').value;
+    const category = document.getElementById('productCategory').value;
+    const sizes = getSelectedSizes();
+    const imageUrl = document.getElementById('productImage').value.trim();
+    const description = document.getElementById('productDescription').value.trim();
+
+    const errors = [];
+
+    if (!name) errors.push('Product name is required');
+    if (!price || price <= 0) errors.push('Valid price is required');
+    if (!category) errors.push('Category is required');
+    if (sizes.length === 0) errors.push('At least one size must be selected');
+    if (!imageUrl) errors.push('Image URL is required');
+    if (!description) errors.push('Description is required');
+
+    if (imageUrl) {
+        try {
+            new URL(imageUrl);
+        } catch {
+            errors.push('Valid image URL is required');
+        }
+    }
+
+    return errors;
+}
+
+// Modal functions
 function openModal(productId) {
     console.log('Opening modal for product:', productId);
-    const product = products.find(p => p.id === productId);
-    if (!product) return;
+    selectedProduct = products.find(product => product.id === productId);
+    if (!selectedProduct) {
+        console.error('Product not found:', productId);
+        return;
+    }
 
-    selectedProduct = product;
+    // Populate modal
+    document.getElementById('modalImage').src = selectedProduct.image;
+    document.getElementById('modalImage').alt = selectedProduct.name;
+    document.getElementById('modalName').textContent = selectedProduct.name;
+    document.getElementById('modalCategory').textContent = selectedProduct.category;
+    document.getElementById('modalDescription').textContent = selectedProduct.description;
+    document.getElementById('modalPrice').textContent = `₹${selectedProduct.price.toLocaleString()}`;
 
-    // Populate modal content
-    const modalImage = document.getElementById('modalImage');
-    const modalName = document.getElementById('modalName');
-    const modalCategory = document.getElementById('modalCategory');
-    const modalDescription = document.getElementById('modalDescription');
-    const modalPrice = document.getElementById('modalPrice');
+    // Populate sizes
     const sizeSelect = document.getElementById('sizeSelect');
-    const deleteButton = document.getElementById('deleteButton');
-
-    if (modalImage) {
-        modalImage.src = product.image;
-        modalImage.alt = product.name;
-        
-        // Add error handling for modal image
-        modalImage.onerror = function() {
-            this.src = PLACEHOLDER_IMG;
-            this.classList.add('img-fallback');
-        };
-    }
-    if (modalName) modalName.textContent = product.name;
-    if (modalCategory) modalCategory.textContent = product.category;
-    if (modalDescription) modalDescription.textContent = product.description;
-    if (modalPrice) modalPrice.textContent = `₹${product.price.toLocaleString('en-IN')}`;
-
-    if (sizeSelect) {
-        sizeSelect.innerHTML = product.sizes.map(size => 
-            `<option value="${size}">${size}</option>`
-        ).join('');
-    }
-
-    if (deleteButton) {
-        deleteButton.classList.toggle('hidden', !isAdminMode);
-    }
+    sizeSelect.innerHTML = selectedProduct.sizes.map(size => 
+        `<option value="${size}">${size}</option>`
+    ).join('');
 
     // Setup order button
     const orderButton = document.getElementById('orderButton');
@@ -649,15 +821,27 @@ function openModal(productId) {
         };
     }
 
+    // Show/hide delete button
+    const deleteButton = document.getElementById('deleteButton');
+    if (deleteButton) {
+        if (isAdminMode) {
+            deleteButton.classList.remove('hidden');
+        } else {
+            deleteButton.classList.add('hidden');
+        }
+    }
+
     // Show modal
     const productModal = document.getElementById('productModal');
     if (productModal) {
         productModal.classList.remove('hidden');
         document.body.style.overflow = 'hidden';
+        console.log('Modal opened for:', selectedProduct.name);
     }
 }
 
 function closeModal() {
+    console.log('Closing modal');
     const productModal = document.getElementById('productModal');
     if (productModal) {
         productModal.classList.add('hidden');
@@ -668,6 +852,7 @@ function closeModal() {
 
 function confirmDelete() {
     if (!selectedProduct) return;
+    console.log('Confirming delete for:', selectedProduct.name);
     const deleteModal = document.getElementById('deleteModal');
     if (deleteModal) {
         deleteModal.classList.remove('hidden');
@@ -675,70 +860,43 @@ function confirmDelete() {
 }
 
 function closeDeleteModal() {
+    console.log('Closing delete modal');
     const deleteModal = document.getElementById('deleteModal');
     if (deleteModal) {
         deleteModal.classList.add('hidden');
     }
 }
 
+function deleteProduct() {
+    if (!selectedProduct) return;
+    
+    console.log('Deleting product:', selectedProduct.name);
+    const productName = selectedProduct.name;
+    products = products.filter(p => p.id !== selectedProduct.id);
+    
+    applyFilters();
+    updateProductCounter();
+    closeModal();
+    closeDeleteModal();
+    
+    showToast(`Deleted: ${productName}`, 'success');
+}
+
+// WhatsApp ordering
 function orderOnWhatsApp() {
     if (!selectedProduct) return;
 
     const sizeSelect = document.getElementById('sizeSelect');
-    const selectedSize = sizeSelect ? sizeSelect.value : selectedProduct.sizes[0];
+    const selectedSize = sizeSelect.value;
     
     const message = `Hi! I want to order:\n\nProduct: ${selectedProduct.name}\nSize: ${selectedSize}\nPrice: ₹${selectedProduct.price}\n\nPlease confirm availability.`;
     const encodedMessage = encodeURIComponent(message);
-    const whatsappUrl = `https://wa.me/917878887678?text=${encodedMessage}`;
+    const whatsappUrl = `https://wa.me/${storeInfo.phone.replace(/[^0-9]/g, '')}?text=${encodedMessage}`;
     
     window.open(whatsappUrl, '_blank');
 }
 
-// ========================================================================================
-// NAVIGATION & UTILITIES
-// ========================================================================================
-function setupNavigation() {
-    const navLinks = document.querySelectorAll('.nav-link');
-    
-    navLinks.forEach(link => {
-        link.addEventListener('click', function(e) {
-            e.preventDefault();
-            
-            const targetId = this.getAttribute('href');
-            const targetElement = document.querySelector(targetId);
-            
-            // Update active nav link
-            navLinks.forEach(l => l.classList.remove('active'));
-            this.classList.add('active');
-            
-            if (targetElement) {
-                const navbarHeight = 100;
-                const elementPosition = targetElement.getBoundingClientRect().top;
-                const offsetPosition = elementPosition + window.pageYOffset - navbarHeight;
-
-                window.scrollTo({
-                    top: Math.max(0, offsetPosition),
-                    behavior: 'smooth'
-                });
-            }
-        });
-    });
-}
-
-function scrollToProducts() {
-    const productsSection = document.getElementById('products');
-    if (productsSection) {
-        const navbarHeight = 100;
-        const elementPosition = productsSection.getBoundingClientRect().top;
-        const offsetPosition = elementPosition + window.pageYOffset - navbarHeight;
-
-        window.scrollTo({
-            top: Math.max(0, offsetPosition),
-            behavior: 'smooth'
-        });
-    }
-}
-
+// Toast notifications
 function showToast(message, type = 'success') {
     const toast = document.getElementById('toast');
     const toastMessage = document.getElementById('toastMessage');
@@ -754,116 +912,50 @@ function showToast(message, type = 'success') {
     }
 }
 
-function setupImagePreview() {
-    const productImageInput = document.getElementById('productImage');
-    const imagePreview = document.getElementById('imagePreview');
-    
-    if (!productImageInput || !imagePreview) return;
-    
-    productImageInput.addEventListener('input', function() {
-        const imageUrl = this.value.trim();
-        
-        if (imageUrl && validateImageUrl(imageUrl)) {
-            imagePreview.src = imageUrl;
-            imagePreview.classList.remove('hidden');
-            imagePreview.classList.remove('img-fallback');
-            
-            imagePreview.onerror = function() {
-                this.src = PLACEHOLDER_IMG;
-                this.classList.add('img-fallback');
-            };
-        } else {
-            imagePreview.src = PLACEHOLDER_IMG;
-            imagePreview.classList.remove('hidden');
-            imagePreview.classList.add('img-fallback');
-        }
-    });
+// Scroll to products
+function scrollToProducts() {
+    const productsSection = document.getElementById('products');
+    if (productsSection) {
+        const navbarHeight = 60;
+        const elementPosition = productsSection.getBoundingClientRect().top;
+        const offsetPosition = elementPosition + window.pageYOffset - navbarHeight;
+
+        window.scrollTo({
+            top: Math.max(0, offsetPosition),
+            behavior: 'smooth'
+        });
+    }
 }
 
-// ========================================================================================
-// EVENT LISTENERS SETUP
-// ========================================================================================
-function setupEventListeners() {
-    console.log('Setting up event listeners...');
-    
-    // Category filter buttons
-    const filterButtons = document.querySelectorAll('.filter-btn');
-    filterButtons.forEach(button => {
-        button.addEventListener('click', function(e) {
-            e.preventDefault();
-            handleCategoryFilter(this);
-        });
-    });
-
-    // Search input
-    const searchInput = document.getElementById('searchInput');
-    if (searchInput) {
-        searchInput.addEventListener('input', handleSearch);
-    }
-
-    // Product form submission
-    const productForm = document.getElementById('productForm');
-    if (productForm) {
-        productForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            addNewProduct();
-        });
-    }
-
-    // Modal close events
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
+// Handle modal overlay clicks
+document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('modal-overlay')) {
+        if (e.target.closest('#productModal')) {
             closeModal();
+        } else if (e.target.closest('#deleteModal')) {
             closeDeleteModal();
         }
-    });
-
-    // Prevent modal from closing when clicking inside modal content
-    const modalContents = document.querySelectorAll('.modal-content');
-    modalContents.forEach(content => {
-        content.addEventListener('click', function(e) {
-            e.stopPropagation();
-        });
-    });
-
-    console.log('Event listeners setup complete');
-}
-
-// ========================================================================================
-// INITIALIZATION
-// ========================================================================================
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('DOM loaded, initializing optimized Neel Fashion Store...');
+    }
     
-    try {
-        // Setup all functionality
-        setupEventListeners();
-        setupNavigation();
-        setupAdminAccess();
-        setupImagePreview();
-        
-        // Initial render
-        applyFilters();
-        updateProductCounter();
-        
-        console.log('Neel Fashion Store initialized successfully');
-        console.log('Admin secret:', PERFORMANCE_CONFIG.ADMIN_SECRET);
-    } catch (error) {
-        console.error('Failed to initialize app:', error);
-        
-        // Fallback rendering
-        const productsGrid = document.getElementById('productsGrid');
-        if (productsGrid) {
-            productsGrid.innerHTML = '<div>Error loading products. Please refresh the page.</div>';
-        }
+    // Close add product form on overlay click
+    if (e.target.closest('.add-product-section') && e.target === document.querySelector('.add-product-section')) {
+        closeAddProductForm();
     }
 });
 
-// Clean up on page unload
-window.addEventListener('beforeunload', function() {
-    // Clear any timeouts
-    if (searchTimeout) clearTimeout(searchTimeout);
-    if (filterTimeout) clearTimeout(filterTimeout);
-});
+// Handle image loading errors
+document.addEventListener('error', function(e) {
+    if (e.target.tagName === 'IMG') {
+        e.target.src = 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400';
+        e.target.alt = 'Product image not available';
+    }
+}, true);
 
-console.log('Neel Fashion Store app loaded with robust image handling');
+// Export functions for global access
+window.openModal = openModal;
+window.closeModal = closeModal;
+window.confirmDelete = confirmDelete;
+window.closeDeleteModal = closeDeleteModal;
+window.deleteProduct = deleteProduct;
+window.scrollToProducts = scrollToProducts;
+window.quickDeleteProduct = quickDeleteProduct;
